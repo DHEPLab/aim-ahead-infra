@@ -56,7 +56,7 @@ Choose "Feature request".
 
 All bug reports are "GitHub issues".
 Before reporting on a bug, check to see if it has
-[already been reported](https://github.com/search?q=+is%3Aissue+user%3Asenzing).
+already been reported.
 To report a bug, create a
 [GitHub issue](https://help.github.com/articles/creating-an-issue/)
 in this repository.
