@@ -76,3 +76,11 @@ template.beconf.tfvars
 *.tfstate.backup
 backend.tf
 *.iso
+
+# Local .terraform directories
+**/.terraform/*
+**/.terraform.lock*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
