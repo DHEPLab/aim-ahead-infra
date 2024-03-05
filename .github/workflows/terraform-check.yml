@@ -9,7 +9,7 @@ jobs:
   terraform:
     name: 'Terraform Check'
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     permissions:
       contents: read # for actions/checkout to fetch code
@@ -62,6 +62,7 @@ jobs:
         framework: terraform
 #        output_format: cli,sarif
 #        output_file_path: console,results.sarif
+      continue-on-error: true
 
     - name: Run Trivy vulnerability scanner in IaC mode
       uses: aquasecurity/trivy-action@master

@@ -7,7 +7,7 @@ jobs:
   terraform:
     name: 'Terraform Apply'
     runs-on: ubuntu-latest
-    environment: production
+    environment: development
 
     permissions:
       contents: read # for actions/checkout to fetch code
@@ -38,10 +38,10 @@ jobs:
         run: terraform validate -check
 
       - name: Terraform Plan
-        run: terraform plan -no-color
+        run: terraform plan -no-color --var 'env=dev'
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: terraform apply -auto-approve --var 'env=dev'
 
 #    - name: Terraform Destroy
 #      run: terraform destroy -auto-approve
