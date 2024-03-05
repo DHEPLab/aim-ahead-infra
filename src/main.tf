@@ -1,9 +1,9 @@
 terraform {
   # backend "s3" {
   #   region         = var.region
-  #   bucket         = "aim-ahead-tf-state-bucket-${var.env}"
+  #   bucket         = "${var.proj_name}-tf-state-bucket-${var.env}"
   #   key            = "tf-infra/terraform.tfstate" 
-  #   dynamodb_table = "terraform-state-locking-${var.env}"
+  #   dynamodb_table = "${var.proj_name}-tf-state-locking-${var.env}"
   #   encrypt        = true
   # }
 
