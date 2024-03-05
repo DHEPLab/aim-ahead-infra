@@ -23,6 +23,6 @@ provider "aws" {
 module "tf-state" {
   source = "./modules/state"
 
-  bucket_name    = "aim-ahead-tf-state-bucket-${var.env}"
-  dynamodb_table = "terraform-state-locking-${var.env}"
+  bucket_name    = "${var.proj_name}-tf-state-bucket-${var.env}"
+  dynamodb_table = "${var.proj_name}-tf-state-locking-${var.env}"
 }
