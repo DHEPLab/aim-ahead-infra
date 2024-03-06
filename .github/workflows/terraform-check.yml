@@ -10,6 +10,10 @@ jobs:
     name: 'Terraform Check'
     runs-on: ubuntu-latest
     environment: development
+    defaults:
+      run:
+        working-directory: src/enviroments/dev
+
 
     permissions:
       contents: read # for actions/checkout to fetch code
@@ -31,7 +35,7 @@ jobs:
         terraform_wrapper: false
 
     - name: Terraform Init
-      run: terraform init -backend=false
+      run: terraform init
 
     - name: Terraform Format
       run: terraform fmt -check
