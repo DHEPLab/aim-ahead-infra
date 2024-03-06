@@ -33,3 +33,10 @@ module "tf-state" {
   bucket_name    = "aim-ahead-tf-state-bucket-dev"
   dynamodb_table = "aim-ahead-tf-state-locking-dev"
 }
+
+# module "service" {
+#   source = "../../modules/services"
+
+#   env          = local.enviroment
+#   project_name = local.project_name
+# }
