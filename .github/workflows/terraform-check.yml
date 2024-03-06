@@ -57,7 +57,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Run TFLint
-      run: tflint -f compact --config=.tflint.hcl
+      run: tflint -f compact --config=${{ github.workspace }}/.tflint.hcl
 
     - name: Checkov GitHub Action
       uses: bridgecrewio/checkov-action@master
