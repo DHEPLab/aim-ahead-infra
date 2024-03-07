@@ -1,5 +1,10 @@
-variable "suffix" {
+variable "env" {
   description = "The suffix of resource name or tag"
+  type        = string
+}
+
+variable "project_name" {
+  description = "project name"
   type        = string
 }
 

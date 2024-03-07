@@ -41,17 +41,18 @@ module "tf-state" {
 #   project_name = local.project_name
 # }
 
-# module "repository" {
-#   source = "../../modules/repository"
-#
-#   project_name = local.project_name
-# }
+module "repository" {
+  source = "../../modules/repository"
 
-#module "db" {
+  project_name = local.project_name
+}
+
+# module "db" {
 #  source = "../../modules/db"
-#
-#  suffix           = local.environment
+
+#  env              = local.environment
+#  project_name     = local.project_name
 #  vpc_id           = module.service.vpc_id
 #  subnet_id        = module.service.private_subnet_2_id
 #  from_subnet_cidr = module.service.private_subnet_1_cidr_block
-#}
+# }

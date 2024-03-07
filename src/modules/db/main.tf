@@ -1,14 +1,14 @@
 resource "aws_db_subnet_group" "database_subnet_group" {
-  name       = "Database-subnet-group-${var.suffix}"
+  name       = "${var.project_name}-db-subnet-group-${var.env}"
   subnet_ids = [var.subnet_id]
 
   tags = {
-    Name = "Database-subnet-group-${var.suffix}"
+    Name = "${var.project_name}-db-subnet-group-${var.env}"
   }
 }
 
 resource "aws_security_group" "database_security_group" {
-  name   = "Database-security-group-${var.suffix}"
+  name   = "${var.project_name}-db-security-group-${var.env}"
   vpc_id = var.vpc_id
 
   ingress {
@@ -19,7 +19,7 @@ resource "aws_security_group" "database_security_group" {
   }
 
   tags = {
-    Name = "Database-security-group-${var.suffix}"
+    Name = "${var.project_name}-db-security-group-${var.env}"
   }
 }
 
@@ -34,14 +34,14 @@ resource "aws_db_parameter_group" "database_parameter" {
 }
 
 resource "aws_db_instance" "database" {
-  identifier            = "aim-ahead-${var.suffix}"
+  identifier            = "${var.project_name}-db-instance-${var.env}"
   instance_class        = "db.t4g.large"
   allocated_storage     = 20
   max_allocated_storage = 100
   engine                = "postgres"
   engine_version        = "14"
 
-  db_name                       = "aim-ahead-${var.suffix}"
+  db_name                       = "${var.project_name}-${var.env}"
   username                      = "aim_ahead"
   manage_master_user_password   = true
   master_user_secret_kms_key_id = aws_kms_key.database_key.key_id
@@ -62,7 +62,7 @@ resource "aws_db_instance" "database" {
 }
 
 resource "aws_db_instance" "database_replica" {
-  identifier             = "aim-ahead-replica-${var.suffix}"
+  identifier             = "${var.project_name}-db-instance-replica-${var.env}"
   replicate_source_db    = aws_db_instance.database.identifier
   instance_class         = "db.t4g.large"
   vpc_security_group_ids = [aws_security_group.database_security_group.id]
