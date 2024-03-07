@@ -34,12 +34,12 @@ module "tf-state" {
   dynamodb_table = "aim-ahead-tf-state-locking-dev"
 }
 
-# module "service" {
-#   source = "../../modules/services"
+module "service" {
+  source = "../../modules/services"
 
-#   env          = local.environment
-#   project_name = local.project_name
-# }
+  env          = local.environment
+  project_name = local.project_name
+}
 
 module "repository" {
   source = "../../modules/repository"
@@ -47,12 +47,12 @@ module "repository" {
   project_name = local.project_name
 }
 
-# module "db" {
-#  source = "../../modules/db"
+module "db" {
+  source = "../../modules/db"
 
-#  env              = local.environment
-#  project_name     = local.project_name
-#  vpc_id           = module.service.vpc_id
-#  subnet_id        = module.service.private_subnet_2_id
-#  from_subnet_cidr = module.service.private_subnet_1_cidr_block
-# }
+  env                     = local.environment
+  project_name            = local.project_name
+  vpc_id                  = module.service.vpc_id
+  subnet_ids              = [module.service.private_subnet_1_id, module.service.private_subnet_2_id]
+  from_subnet_cidr_blocks = [module.service.private_subnet_1_cidr_block, module.service.private_subnet_2_cidr_block]
+}

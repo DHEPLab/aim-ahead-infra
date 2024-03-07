@@ -13,12 +13,12 @@ variable "vpc_id" {
   type        = string
 }
 
-variable "subnet_id" {
-  description = "Subnet id of database"
-  type        = string
+variable "subnet_ids" {
+  description = "Subnet ids of database"
+  type        = list(string)
 }
 
-variable "from_subnet_cidr" {
-  description = "The subnet of the service which needs connect to this database"
-  type        = string
+variable "from_subnet_cidr_blocks" {
+  description = "The subnets of the service which needs connect to this database"
+  type        = list(string)
 }

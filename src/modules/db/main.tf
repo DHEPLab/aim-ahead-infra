@@ -1,6 +1,6 @@
 resource "aws_db_subnet_group" "database_subnet_group" {
   name       = "${var.project_name}-db-subnet-group-${var.env}"
-  subnet_ids = [var.subnet_id]
+  subnet_ids = var.subnet_ids
 
   tags = {
     Name = "${var.project_name}-db-subnet-group-${var.env}"
@@ -15,7 +15,7 @@ resource "aws_security_group" "database_security_group" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = [var.from_subnet_cidr]
+    cidr_blocks = var.from_subnet_cidr_blocks
   }
 
   tags = {
