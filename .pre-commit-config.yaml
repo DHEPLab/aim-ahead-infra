@@ -4,6 +4,9 @@ repos:
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
+        args:
+          - --hook-config=--retry-once-with-cleanup=true
+          - --tf-init-args=-backend=false
       - id: terraform_tflint
         args:
           - --args=--module
@@ -11,4 +14,5 @@ repos:
       - id: terraform_trivy
         args:
           - --args=--severity=CRITICAL,HIGH
+          - --args=--skip-dirs="**/.terraform"
       # - id: terraform_checkov

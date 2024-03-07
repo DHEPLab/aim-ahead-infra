@@ -1,5 +1,5 @@
 locals {
   project_name = "aim-ahead"
-  enviroment   = "dev"
+  environment  = "dev"
   region       = "us-east-1"
 }
