@@ -1,11 +1,11 @@
 terraform {
-  # backend "s3" {
-  #   region         = "us-east-1"
-  #   bucket         = "aim-ahead-tf-state-bucket-dev"
-  #   key            = "tf-infra/terraform.tfstate" 
-  #   dynamodb_table = "aim-ahead-tf-state-locking-dev"
-  #   encrypt        = true
-  # }
+  backend "s3" {
+    region         = "us-east-1"
+    bucket         = "aim-ahead-tf-state-bucket-dev"
+    key            = "tf-infra/terraform.tfstate"
+    dynamodb_table = "aim-ahead-tf-state-locking-dev"
+    encrypt        = true
+  }
 
   required_providers {
     aws = {
