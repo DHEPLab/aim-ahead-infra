@@ -34,17 +34,16 @@ resource "aws_db_parameter_group" "database_parameter" {
 }
 
 resource "aws_db_instance" "database" {
-  identifier            = "${var.project_name}-db-instance-${var.env}"
+  identifier            = "masterdb${var.env}"
   instance_class        = "db.t4g.large"
   allocated_storage     = 20
   max_allocated_storage = 100
   engine                = "postgres"
   engine_version        = "14"
 
-  db_name                       = "${var.project_name}-${var.env}"
-  username                      = "aim_ahead"
-  manage_master_user_password   = true
-  master_user_secret_kms_key_id = aws_kms_key.database_key.key_id
+  db_name  = "aimahead${var.env}"
+  username = "aim_ahead"
+  password = random_password.password.result
 
   multi_az               = false
   db_subnet_group_name   = aws_db_subnet_group.database_subnet_group.name
@@ -62,7 +61,7 @@ resource "aws_db_instance" "database" {
 }
 
 resource "aws_db_instance" "database_replica" {
-  identifier             = "${var.project_name}-db-instance-replica-${var.env}"
+  identifier             = "replicadb${var.env}"
   replicate_source_db    = aws_db_instance.database.identifier
   instance_class         = "db.t4g.large"
   vpc_security_group_ids = [aws_security_group.database_security_group.id]
@@ -76,6 +75,8 @@ resource "aws_db_instance" "database_replica" {
   skip_final_snapshot     = true
 }
 
-resource "aws_kms_key" "database_key" {
-  description = "Database key"
+resource "random_password" "password" {
+  length           = 16
+  special          = true
+  override_special = "!#$%&*()-_=+[]{}<>:?"
 }
