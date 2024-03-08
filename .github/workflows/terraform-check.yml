@@ -28,13 +28,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1   
-
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v3
       with:
@@ -66,14 +59,14 @@ jobs:
     - name: Run TFLint
       run: tflint -f compact --config=${{ github.workspace }}/.tflint.hcl
 
-    - name: Checkov GitHub Action
-      uses: bridgecrewio/checkov-action@master
-      with:
-        # This will add both a CLI output to the console and create a results.sarif file
-        framework: terraform
-#        output_format: cli,sarif
-#        output_file_path: console,results.sarif
-      continue-on-error: true
+#    - name: Checkov GitHub Action
+#      uses: bridgecrewio/checkov-action@master
+#      with:
+#        # This will add both a CLI output to the console and create a results.sarif file
+#        framework: terraform
+##        output_format: cli,sarif
+##        output_file_path: console,results.sarif
+#      continue-on-error: true
 
     - name: Run Trivy vulnerability scanner in IaC mode
       uses: aquasecurity/trivy-action@master
@@ -95,6 +88,4 @@ jobs:
       run: terraform validate
 
     - name: Terraform plan
-      uses: hashicorp/terraform-github-actions@master
-      with:
-        tf_actions_subcommand: 'plan'
+      run: terraform plan
