@@ -37,8 +37,9 @@ module "tf-state" {
 module "service" {
   source = "../../modules/services"
 
-  env          = local.environment
-  project_name = local.project_name
+  env           = local.environment
+  project_name  = local.project_name
+  api_image_uri = module.repository.api_image_uri
 }
 
 module "repository" {
