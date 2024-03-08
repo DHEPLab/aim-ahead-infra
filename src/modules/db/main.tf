@@ -73,6 +73,10 @@ resource "aws_db_instance" "database_replica" {
 
   backup_retention_period = 0
   skip_final_snapshot     = true
+
+  lifecycle {
+    ignore_changes = [storage_encrypted, max_allocated_storage]
+  }
 }
 
 resource "random_password" "password" {
