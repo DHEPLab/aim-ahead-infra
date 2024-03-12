@@ -12,8 +12,8 @@ resource "aws_ecs_task_definition" "api_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 8000,
-          "hostPort": 8000
+          "containerPort": 5000,
+          "hostPort": 5000
         }
       ],
       "memory": 512,
