@@ -38,9 +38,9 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+#trivy:ignore:AVD-AWS-0053
 resource "aws_lb" "application_load_balancer" {
   name                       = "${var.project_name}-lb-${var.env}"
-  internal                   = true
   load_balancer_type         = "application"
   drop_invalid_header_fields = true
   subnets = [
@@ -91,26 +91,36 @@ resource "aws_security_group" "load_balancer_security_group" {
   }
 }
 
-resource "aws_lb_target_group" "target_group" {
-  name        = "${var.project_name}-target-group-${var.env}"
-  port        = "80"
+resource "aws_lb_target_group" "api_target_group" {
+  name        = "${var.project_name}-api-target-group-${var.env}"
+  port        = "5000"
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
+
+  health_check {
+    healthy_threshold   = "3"
+    interval            = "30"
+    protocol            = "HTTP"
+    matcher             = "200"
+    timeout             = "3"
+    path                = "/"
+    unhealthy_threshold = "2"
+  }
 }
 
-resource "aws_lb_listener" "listener" {
+resource "aws_lb_listener" "api_listener" {
   load_balancer_arn = aws_lb.application_load_balancer.arn
-  port              = "80"
+  port              = "8000"
   # trivy:ignore:avd-aws-0054
   protocol = "HTTP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.target_group.arn
+    target_group_arn = aws_lb_target_group.api_target_group.arn
   }
 }
 
-resource "aws_ecs_service" "api-service" {
+resource "aws_ecs_service" "api_service" {
   name            = "${var.project_name}-api-service-${var.env}"
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.api_task.arn
@@ -118,29 +128,27 @@ resource "aws_ecs_service" "api-service" {
   desired_count   = 1
 
   load_balancer {
-    target_group_arn = aws_lb_target_group.target_group.arn
-    container_name   = aws_ecs_task_definition.api_task.family
-    container_port   = "8000"
+    target_group_arn = aws_lb_target_group.api_target_group.arn
+    container_name   = "${var.project_name}-api-task-${var.env}"
+    container_port   = "5000"
   }
 
   network_configuration {
     subnets = [
       aws_subnet.private_subnet_1.id,
       aws_subnet.private_subnet_2.id,
-      aws_subnet.public_subnet_1.id,
-      aws_subnet.public_subnet_2.id
     ]
     assign_public_ip = false
-    security_groups  = [aws_security_group.service_security_group.id]
+    security_groups  = [aws_security_group.api_service_security_group.id]
   }
 }
 
 # trivy:ignore:avd-aws-0107
-resource "aws_security_group" "service_security_group" {
+resource "aws_security_group" "api_service_security_group" {
   ingress {
-    from_port       = 0
-    to_port         = 0
-    protocol        = "-1"
+    from_port       = 5000
+    to_port         = 5000
+    protocol        = "tcp"
     security_groups = [aws_security_group.load_balancer_security_group.id]
   }
 
