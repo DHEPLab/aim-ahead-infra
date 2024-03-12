@@ -143,7 +143,6 @@ resource "aws_ecs_service" "api_service" {
   }
 }
 
-# trivy:ignore:avd-aws-0107
 resource "aws_security_group" "api_service_security_group" {
   ingress {
     from_port       = 5000
