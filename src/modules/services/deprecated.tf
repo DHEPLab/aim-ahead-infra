@@ -16,4 +16,8 @@ resource "aws_security_group" "api_service_security_group" {
     # trivy:ignore:avd-aws-0104
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    "deprecated" = true
+  }
 }

@@ -70,26 +70,15 @@ resource "aws_security_group" "load_balancer_security_group" {
   name   = "${var.project_name}-lb-sg-${var.env}"
   vpc_id = aws_vpc.vpc.id
 
-  ingress {
-    from_port = 80
-    to_port   = 80
-    protocol  = "tcp"
-    # trivy:ignore:avd-aws-0107
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port = 443
-    to_port   = 443
-    protocol  = "tcp"
-    # trivy:ignore:avd-aws-0107
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  ingress {
-    from_port = 8000
-    to_port   = 8000
-    protocol  = "tcp"
-    # trivy:ignore:avd-aws-0107
-    cidr_blocks = ["0.0.0.0/0"]
+  dynamic "ingress" {
+    for_each = var.env == "prod" ? [80, 443] : [80, 443, 8000]
+    content {
+      from_port = ingress.value
+      to_port   = ingress.value
+      protocol  = "tcp"
+      # trivy:ignore:avd-aws-0107
+      cidr_blocks = ["0.0.0.0/0"]
+    }
   }
 
   egress {
