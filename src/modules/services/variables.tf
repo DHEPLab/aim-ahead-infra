@@ -18,6 +18,11 @@ variable "api_image_uri" {
   type        = string
 }
 
+variable "app_image_uri" {
+  description = "app image uri"
+  type        = string
+}
+
 variable "task_execution_role_arn" {
   type = string
 }

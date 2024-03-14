@@ -28,6 +28,32 @@ resource "aws_ecs_task_definition" "api_task" {
   execution_role_arn       = var.task_execution_role_arn
 }
 
+resource "aws_ecs_task_definition" "app_task" {
+  family                   = "${var.project_name}-app-task-${var.env}"
+  container_definitions    = <<DEFINITION
+  [
+    {
+      "name": "${var.project_name}-app-task-${var.env}",
+      "image": "${var.app_image_uri}",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080
+        }
+      ],
+      "memory": 512,
+      "cpu": 256
+    }
+  ]
+  DEFINITION
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  memory                   = 512
+  cpu                      = 256
+  execution_role_arn       = var.task_execution_role_arn
+}
+
 #trivy:ignore:AVD-AWS-0053
 resource "aws_lb" "application_load_balancer" {
   name                       = "${var.project_name}-lb-${var.env}"
@@ -58,15 +84,6 @@ resource "aws_security_group" "load_balancer_security_group" {
     # trivy:ignore:avd-aws-0107
     cidr_blocks = ["0.0.0.0/0"]
   }
-  # APP entrypoint
-  ingress {
-    from_port = 3000
-    to_port   = 3000
-    protocol  = "tcp"
-    # trivy:ignore:avd-aws-0107
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-  # API entrypoint
   ingress {
     from_port = 8000
     to_port   = 8000
@@ -113,6 +130,34 @@ resource "aws_lb_listener" "api_listener" {
   }
 }
 
+resource "aws_lb_target_group" "app_target_group" {
+  name        = "${var.project_name}-app-target-group-${var.env}"
+  port        = "8080"
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = aws_vpc.vpc.id
+
+  health_check {
+    healthy_threshold = "3"
+    interval          = "30"
+    protocol          = "HTTP"
+    matcher           = "200"
+    timeout           = "3"
+    path              = "/"
+  }
+}
+
+resource "aws_lb_listener" "app_listener" {
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = "80"
+  # trivy:ignore:avd-aws-0054
+  protocol = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_target_group.arn
+  }
+}
+
 resource "aws_ecs_service" "api_service" {
   name            = "${var.project_name}-api-service-${var.env}"
   cluster         = aws_ecs_cluster.cluster.id
@@ -132,17 +177,48 @@ resource "aws_ecs_service" "api_service" {
       aws_subnet.private_subnet_2.id,
     ]
     assign_public_ip = false
-    security_groups  = [aws_security_group.api_service_security_group.id]
+    security_groups  = [aws_security_group.ecs_service_security_group.id]
   }
 }
 
-resource "aws_security_group" "api_service_security_group" {
-  name   = "${var.project_name}-api-task-sg-${var.env}"
+resource "aws_ecs_service" "app_service" {
+  name            = "${var.project_name}-app-service-${var.env}"
+  cluster         = aws_ecs_cluster.cluster.id
+  task_definition = aws_ecs_task_definition.app_task.arn
+  launch_type     = "FARGATE"
+  desired_count   = 1
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app_target_group.arn
+    container_name   = "${var.project_name}-app-task-${var.env}"
+    container_port   = "8080"
+  }
+
+  network_configuration {
+    subnets = [
+      aws_subnet.private_subnet_1.id,
+      aws_subnet.private_subnet_2.id,
+    ]
+    assign_public_ip = false
+    security_groups  = [aws_security_group.ecs_service_security_group.id]
+  }
+}
+
+# Application Serurity Group
+resource "aws_security_group" "ecs_service_security_group" {
+  name   = "${var.project_name}-ecs-service-sg-${var.env}"
   vpc_id = aws_vpc.vpc.id
 
   ingress {
     from_port       = 5000
     to_port         = 5000
+    protocol        = "tcp"
+    security_groups = [aws_security_group.load_balancer_security_group.id]
+  }
+
+  ingress {
+    from_port       = 8080
+    to_port         = 8080
     protocol        = "tcp"
     security_groups = [aws_security_group.load_balancer_security_group.id]
   }
