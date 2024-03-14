@@ -25,17 +25,7 @@ resource "aws_ecs_task_definition" "api_task" {
   network_mode             = "awsvpc"
   memory                   = 512
   cpu                      = 256
-  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
-}
-
-resource "aws_iam_role" "ecs_task_execution_role" {
-  name               = "${var.project_name}-ecs-task-executor-${var.env}"
-  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
-  role       = aws_iam_role.ecs_task_execution_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  execution_role_arn       = var.task_execution_role_arn
 }
 
 #trivy:ignore:AVD-AWS-0053
@@ -51,6 +41,9 @@ resource "aws_lb" "application_load_balancer" {
 }
 
 resource "aws_security_group" "load_balancer_security_group" {
+  name   = "${var.project_name}-lb-sg-${var.env}"
+  vpc_id = aws_vpc.vpc.id
+
   ingress {
     from_port = 80
     to_port   = 80
@@ -144,6 +137,9 @@ resource "aws_ecs_service" "api_service" {
 }
 
 resource "aws_security_group" "api_service_security_group" {
+  name   = "${var.project_name}-api-task-sg-${var.env}"
+  vpc_id = aws_vpc.vpc.id
+
   ingress {
     from_port       = 5000
     to_port         = 5000

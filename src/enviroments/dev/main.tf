@@ -26,6 +26,36 @@ provider "aws" {
   }
 }
 
+provider "aws" {
+  alias  = "aws-no-default-tags"
+  region = local.region
+}
+
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name               = "${local.project_name}-ecs-task-executor-${local.environment}"
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+
+  provider = aws.aws-no-default-tags
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
 module "tf-state" {
   source = "../../modules/state"
@@ -37,9 +67,10 @@ module "tf-state" {
 module "service" {
   source = "../../modules/services"
 
-  env           = local.environment
-  project_name  = local.project_name
-  api_image_uri = module.repository.api_image_uri
+  env                     = local.environment
+  project_name            = local.project_name
+  api_image_uri           = module.repository.api_image_uri
+  task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
 }
 
 module "repository" {

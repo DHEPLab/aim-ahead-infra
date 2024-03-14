@@ -14,6 +14,10 @@ variable "project_name" {
 }
 
 variable "api_image_uri" {
-  description = "project name"
+  description = "api image uri"
   type        = string
+}
+
+variable "task_execution_role_arn" {
+  type = string
 }
