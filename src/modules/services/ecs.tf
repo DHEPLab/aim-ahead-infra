@@ -3,7 +3,7 @@ resource "aws_ecs_cluster" "cluster" {
 }
 
 resource "aws_ecs_task_definition" "api_task" {
-  family                   = "${var.project_name}-task-family-${var.env}"
+  family                   = "${var.project_name}-api-task-${var.env}"
   container_definitions    = <<DEFINITION
   [
     {
