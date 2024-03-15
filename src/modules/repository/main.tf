@@ -15,3 +15,30 @@ resource "aws_ecr_repository" "ecr_repo" {
     scan_on_push = true
   }
 }
+
+resource "aws_ecr_repository" "aim_ahead_api_repo" {
+  name = local.api_image_name
+  #trivy:ignore:avd-aws-0031
+  image_tag_mutability = "MUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = ""
+  }
+}
+
+
+resource "aws_ecr_repository" "aim_ahead_app_repo" {
+  name = local.app_image_name
+  #trivy:ignore:avd-aws-0031
+  image_tag_mutability = "MUTABLE"
+  image_scanning_configuration {
+    scan_on_push = true
+  }
+
+  tags = {
+    Environment = ""
+  }
+}
