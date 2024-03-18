@@ -12,8 +12,8 @@ resource "aws_ecs_task_definition" "api_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 5000,
-          "hostPort": 5000
+          "containerPort": ${local.api_container_binding_port},
+          "hostPort": ${local.api_container_binding_port}
         }
       ],
       "memory": 512,
@@ -38,8 +38,8 @@ resource "aws_ecs_task_definition" "app_task" {
       "essential": true,
       "portMappings": [
         {
-          "containerPort": 8080,
-          "hostPort": 8080
+          "containerPort": ${local.app_container_binding_port},
+          "hostPort": ${local.app_container_binding_port}
         }
       ],
       "memory": 512,
@@ -92,7 +92,7 @@ resource "aws_security_group" "load_balancer_security_group" {
 
 resource "aws_lb_target_group" "api_target_group" {
   name        = "${var.project_name}-api-target-group-${var.env}"
-  port        = "5000"
+  port        = local.api_container_binding_port
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
@@ -121,7 +121,7 @@ resource "aws_lb_listener" "api_listener" {
 
 resource "aws_lb_target_group" "app_target_group" {
   name        = "${var.project_name}-app-target-group-${var.env}"
-  port        = "8080"
+  port        = local.app_container_binding_port
   protocol    = "HTTP"
   target_type = "ip"
   vpc_id      = aws_vpc.vpc.id
@@ -177,7 +177,7 @@ resource "aws_ecs_service" "api_service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.api_target_group.arn
     container_name   = "${var.project_name}-api-task-${var.env}"
-    container_port   = "5000"
+    container_port   = local.api_container_binding_port
   }
 
   network_configuration {
@@ -200,7 +200,7 @@ resource "aws_ecs_service" "app_service" {
   load_balancer {
     target_group_arn = aws_lb_target_group.app_target_group.arn
     container_name   = "${var.project_name}-app-task-${var.env}"
-    container_port   = "8080"
+    container_port   = local.app_container_binding_port
   }
 
   network_configuration {
@@ -219,15 +219,15 @@ resource "aws_security_group" "ecs_service_security_group" {
   vpc_id = aws_vpc.vpc.id
 
   ingress {
-    from_port       = 5000
-    to_port         = 5000
+    from_port       = local.api_container_binding_port
+    to_port         = local.api_container_binding_port
     protocol        = "tcp"
     security_groups = [aws_security_group.load_balancer_security_group.id]
   }
 
   ingress {
-    from_port       = 8080
-    to_port         = 8080
+    from_port       = local.app_container_binding_port
+    to_port         = local.app_container_binding_port
     protocol        = "tcp"
     security_groups = [aws_security_group.load_balancer_security_group.id]
   }
