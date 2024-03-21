@@ -26,11 +26,6 @@ provider "aws" {
   }
 }
 
-provider "aws" {
-  alias  = "aws-no-default-tags"
-  region = local.region
-}
-
 resource "aws_iam_role" "ecs_task_execution_role" {
   name               = "${local.project_name}-ecs-task-executor-${local.environment}"
   assume_role_policy = <<EOF
@@ -49,7 +44,6 @@ resource "aws_iam_role" "ecs_task_execution_role" {
 }
 EOF
 
-  provider = aws.aws-no-default-tags
 }
 
 resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
