@@ -71,7 +71,7 @@ resource "aws_security_group" "load_balancer_security_group" {
   vpc_id = aws_vpc.vpc.id
 
   dynamic "ingress" {
-    for_each = var.env == "prod" ? [80, 443] : [80, 443, 8000]
+    for_each = [80, 443]
     content {
       from_port = ingress.value
       to_port   = ingress.value
@@ -105,17 +105,6 @@ resource "aws_lb_target_group" "api_target_group" {
     timeout             = "3"
     path                = "/api/healthcheck"
     unhealthy_threshold = "2"
-  }
-}
-
-resource "aws_lb_listener" "api_listener" {
-  load_balancer_arn = aws_lb.application_load_balancer.arn
-  port              = "8000"
-  # trivy:ignore:avd-aws-0054
-  protocol = "HTTP"
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.api_target_group.arn
   }
 }
 
@@ -165,6 +154,34 @@ resource "aws_lb_listener_rule" "app_forward_listener" {
   tags = {
     name = "${var.project_name}-app-forward-${var.env}"
   }
+}
+
+resource "aws_lb_listener_rule" "admin_api_lb_listener_rule" {
+  listener_arn = aws_lb_listener.app_listener.arn
+  priority     = 10
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api_target_group.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["/admin/*"]
+    }
+  }
+
+  condition {
+    http_header {
+      http_header_name = "X-API-KEY"
+      values           = [random_string.admin_api_key.result]
+    }
+  }
+
+  tags = {
+    name = "${var.project_name}-admin-api-forward-${var.env}"
+  }
+
 }
 
 resource "aws_ecs_service" "api_service" {
@@ -239,4 +256,10 @@ resource "aws_security_group" "ecs_service_security_group" {
     # trivy:ignore:avd-aws-0104
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "random_string" "admin_api_key" {
+  length           = 8
+  special          = true
+  override_special = "@#$_="
 }
