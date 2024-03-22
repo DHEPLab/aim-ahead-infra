@@ -7,6 +7,11 @@ resource "aws_secretsmanager_secret" "jwt_key" {
   description = "JWT Key for generate access token"
 }
 
+resource "aws_secretsmanager_secret_version" "jwt_key_version" {
+  secret_id     = aws_secretsmanager_secret.jwt_key.id
+  secret_string = random_password.jwt_key.result
+}
+
 resource "aws_ecs_task_definition" "api_task" {
   family                   = "${var.project_name}-api-task-${var.env}"
   container_definitions    = <<DEFINITION
@@ -285,4 +290,9 @@ resource "random_string" "admin_api_key" {
   length           = 8
   special          = true
   override_special = "@#$_="
+}
+
+resource "random_password" "jwt_key" {
+  length  = 32
+  special = true
 }
