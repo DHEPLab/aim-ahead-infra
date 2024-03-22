@@ -71,7 +71,7 @@ resource "aws_security_group" "load_balancer_security_group" {
   vpc_id = aws_vpc.vpc.id
 
   dynamic "ingress" {
-    for_each = [80, 443]
+    for_each = var.env == "prod" ? [80, 443] : [80, 443, 8000]
     content {
       from_port = ingress.value
       to_port   = ingress.value
@@ -105,6 +105,17 @@ resource "aws_lb_target_group" "api_target_group" {
     timeout             = "3"
     path                = "/api/healthcheck"
     unhealthy_threshold = "2"
+  }
+}
+
+resource "aws_lb_listener" "api_listener" {
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = "8000"
+  # trivy:ignore:avd-aws-0054
+  protocol = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.api_target_group.arn
   }
 }
 
