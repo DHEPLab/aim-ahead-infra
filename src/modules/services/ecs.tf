@@ -2,6 +2,11 @@ resource "aws_ecs_cluster" "cluster" {
   name = "${var.project_name}-cluster-${var.env}"
 }
 
+resource "aws_secretsmanager_secret" "jwt_key" {
+  name        = "${var.project_name}-secretsmanager-${var.env}"
+  description = "JWT Key for generate access token"
+}
+
 resource "aws_ecs_task_definition" "api_task" {
   family                   = "${var.project_name}-api-task-${var.env}"
   container_definitions    = <<DEFINITION
@@ -43,7 +48,14 @@ resource "aws_ecs_task_definition" "app_task" {
         }
       ],
       "memory": 512,
-      "cpu": 256
+      "cpu": 256,
+      "secrets": [
+          {
+              "name":"${var.project_name}-secretsmanager-${var.env}",
+              "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
+          }
+      ]
+
     }
   ]
   DEFINITION
