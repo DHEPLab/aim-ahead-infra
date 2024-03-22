@@ -22,3 +22,8 @@ variable "from_subnet_cidr_blocks" {
   description = "The subnets of the service which needs connect to this database"
   type        = list(string)
 }
+
+variable "bastion_host_subnet_cidr_block" {
+  description = "The subnets of bastion host"
+  type        = string
+}

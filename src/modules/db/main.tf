@@ -15,7 +15,7 @@ resource "aws_security_group" "database_security_group" {
     from_port   = 5432
     to_port     = 5432
     protocol    = "tcp"
-    cidr_blocks = var.from_subnet_cidr_blocks
+    cidr_blocks = concat(var.from_subnet_cidr_blocks, [var.bastion_host_subnet_cidr_block])
   }
 
   tags = {

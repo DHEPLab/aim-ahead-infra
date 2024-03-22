@@ -77,9 +77,10 @@ module "repository" {
 module "db" {
   source = "../../modules/db"
 
-  env                     = local.environment
-  project_name            = local.project_name
-  vpc_id                  = module.service.vpc_id
-  subnet_ids              = [module.service.private_subnet_1_id, module.service.private_subnet_2_id]
-  from_subnet_cidr_blocks = [module.service.private_subnet_1_cidr_block, module.service.private_subnet_2_cidr_block]
+  env                            = local.environment
+  project_name                   = local.project_name
+  vpc_id                         = module.service.vpc_id
+  subnet_ids                     = [module.service.private_subnet_1_id, module.service.private_subnet_2_id]
+  from_subnet_cidr_blocks        = [module.service.private_subnet_1_cidr_block, module.service.private_subnet_2_cidr_block]
+  bastion_host_subnet_cidr_block = module.service.public_subnet_1_cidr_block
 }
