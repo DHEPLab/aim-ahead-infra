@@ -24,6 +24,11 @@ variable "from_subnet_cidr_blocks" {
 }
 
 variable "bastion_host_subnet_cidr_block" {
-  description = "The subnets of bastion host"
+  description = "The subnet cidr block of bastion host"
+  type        = string
+}
+
+variable "bastion_host_subnet_id" {
+  description = "The subnet id of bastion host"
   type        = string
 }

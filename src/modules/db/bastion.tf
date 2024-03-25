@@ -1,25 +1,19 @@
 ## Generate PEM (and OpenSSH) formatted private key.
-resource "tls_private_key" "ec2-bastion-host-key-pair" {
+resource "tls_private_key" "ecs_bastion_host_key_pair" {
   algorithm = "RSA"
   rsa_bits  = 4096
 }
 
-resource "local_file" "ec2-bastion-host-public-key" {
-  depends_on = [tls_private_key.ec2-bastion-host-key-pair]
-  content    = tls_private_key.ec2-bastion-host-key-pair.public_key_openssh
-  filename   = "./ec2-bastion-key-pair.pub"
-}
-
-resource "aws_key_pair" "ec2-bastion-host-key-pair" {
+resource "aws_key_pair" "ec2_bastion_host_key_pair" {
   key_name   = "${var.project_name}-ec2-bastion-host-key-pair-${var.env}"
-  public_key = tls_private_key.ec2-bastion-host-key-pair.public_key_openssh
+  public_key = tls_private_key.ecs_bastion_host_key_pair.public_key_openssh
 
   tags = {
     Name = "${var.project_name}-ec2-bastion-host-key-pair-${var.env}"
   }
 }
 
-resource "aws_security_group" "ec2-bastion-sg" {
+resource "aws_security_group" "ec2_bastion_sg" {
   description = "EC2 Bastion Host Security Group"
   name        = "${var.project_name}-ec2-bastion-sg-${var.env}"
   vpc_id      = var.vpc_id
@@ -51,12 +45,12 @@ data "aws_ami" "latest_amazon_linux" {
 }
 
 ## EC2 Bastion Host
-resource "aws_instance" "ec2-bastion-host" {
+resource "aws_instance" "ec2_bastion_host" {
   ami                         = data.aws_ami.latest_amazon_linux.id
   instance_type               = "t2.micro"
-  key_name                    = aws_key_pair.ec2-bastion-host-key-pair.key_name
-  vpc_security_group_ids      = [aws_security_group.ec2-bastion-sg.id]
-  subnet_id                   = var.bastion_host_subnet_cidr_block
+  key_name                    = aws_key_pair.ec2_bastion_host_key_pair.key_name
+  vpc_security_group_ids      = [aws_security_group.ec2_bastion_sg.id]
+  subnet_id                   = var.bastion_host_subnet_id
   associate_public_ip_address = false
   user_data                   = templatefile("${path.module}/userdata.tpl", {})
 
@@ -86,9 +80,9 @@ resource "aws_instance" "ec2-bastion-host" {
 }
 
 ## EC2 Bastion Host Elastic IP
-resource "aws_eip" "ec2-bastion-host-eip" {
+resource "aws_eip" "ec2_bastion_host_eip" {
   domain   = "vpc"
-  instance = aws_instance.ec2-bastion-host.id
+  instance = aws_instance.ec2_bastion_host.id
 
   tags = {
     Name = "${var.project_name}-ec2-bastion-host-eip-${var.env}"
