@@ -27,7 +27,13 @@ resource "aws_ecs_task_definition" "api_task" {
         }
       ],
       "memory": 512,
-      "cpu": 256
+      "cpu": 256,
+      "secrets": [
+          {
+              "name":"${var.project_name}-secretsmanager-${var.env}",
+              "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
+          }
+      ]
     }
   ]
   DEFINITION
@@ -54,13 +60,6 @@ resource "aws_ecs_task_definition" "app_task" {
       ],
       "memory": 512,
       "cpu": 256,
-      "secrets": [
-          {
-              "name":"${var.project_name}-secretsmanager-${var.env}",
-              "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
-          }
-      ]
-
     }
   ]
   DEFINITION
