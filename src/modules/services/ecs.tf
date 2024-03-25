@@ -33,7 +33,15 @@ resource "aws_ecs_task_definition" "api_task" {
               "name":"${var.project_name}-secretsmanager-${var.env}",
               "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
           }
-      ]
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/fargate/service/${var.project_name}-${var.env}",
+          "awslogs-region": "${var.region}",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
     }
   ]
   DEFINITION
@@ -294,4 +302,9 @@ resource "random_string" "admin_api_key" {
 resource "random_password" "jwt_key" {
   length  = 32
   special = true
+}
+
+resource "aws_cloudwatch_log_group" "log_group" {
+  name              = "/fargate/service/${var.project_name}-${var.env}"
+  retention_in_days = 30
 }

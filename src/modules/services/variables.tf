@@ -26,3 +26,7 @@ variable "app_image_uri" {
 variable "task_execution_role_arn" {
   type = string
 }
+
+variable "region" {
+  type = string
+}

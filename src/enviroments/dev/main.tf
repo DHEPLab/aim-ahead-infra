@@ -66,6 +66,7 @@ module "service" {
   api_image_uri           = module.repository.api_image_uri
   app_image_uri           = module.repository.app_image_uri
   task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
+  region                  = local.region
 }
 
 module "repository" {
