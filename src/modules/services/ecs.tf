@@ -30,7 +30,7 @@ resource "aws_ecs_task_definition" "api_task" {
       "cpu": 256,
       "secrets": [
           {
-              "name":"${var.project_name}-secretsmanager-${var.env}",
+              "name":"JWT_SECRET_KEY",
               "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
           }
       ],
