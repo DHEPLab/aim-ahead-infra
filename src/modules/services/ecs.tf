@@ -28,6 +28,12 @@ resource "aws_ecs_task_definition" "api_task" {
       ],
       "memory": 512,
       "cpu": 256,
+      "secrets": [
+          {
+              "name":"${var.project_name}-secretsmanager-${var.env}",
+              "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
+          }
+      ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
@@ -43,7 +49,7 @@ resource "aws_ecs_task_definition" "api_task" {
   network_mode             = "awsvpc"
   memory                   = 512
   cpu                      = 256
-  execution_role_arn       = var.task_execution_role_arn
+  execution_role_arn       = aws_iam_role.ecs_task_role.arn
 }
 
 resource "aws_ecs_task_definition" "app_task" {
