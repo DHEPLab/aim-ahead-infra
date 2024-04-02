@@ -31,6 +31,16 @@ resource "aws_db_parameter_group" "database_parameter" {
     name  = "log_connections"
     value = "1"
   }
+
+  parameter {
+    name  = "rds.force_ssl"
+    value = "1"
+  }
+}
+
+data "aws_rds_certificate" "database_cert" {
+  id                = "rds-ca-rsa2048-g1"
+  latest_valid_till = true
 }
 
 resource "aws_db_instance" "database" {
@@ -56,6 +66,7 @@ resource "aws_db_instance" "database" {
 
   backup_retention_period = 1
   skip_final_snapshot     = true
+  ca_cert_identifier      = data.aws_rds_certificate.database_cert.id
 
   parameter_group_name = aws_db_parameter_group.database_parameter.name
 }
@@ -73,6 +84,7 @@ resource "aws_db_instance" "database_replica" {
 
   backup_retention_period = 0
   skip_final_snapshot     = true
+  ca_cert_identifier      = data.aws_rds_certificate.database_cert.id
 
   lifecycle {
     ignore_changes = [storage_encrypted, max_allocated_storage]
