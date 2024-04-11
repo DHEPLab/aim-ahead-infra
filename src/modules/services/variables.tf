@@ -1,4 +1,3 @@
-
 variable "env" {
   description = "enviroment"
   type        = string
@@ -23,10 +22,10 @@ variable "app_image_uri" {
   type        = string
 }
 
-variable "task_execution_role_arn" {
+variable "region" {
   type = string
 }
 
-variable "region" {
+variable "database_url" {
   type = string
 }

@@ -61,12 +61,12 @@ module "tf-state" {
 module "service" {
   source = "../../modules/services"
 
-  env                     = local.environment
-  project_name            = local.project_name
-  api_image_uri           = module.repository.api_image_uri
-  app_image_uri           = module.repository.app_image_uri
-  task_execution_role_arn = aws_iam_role.ecs_task_execution_role.arn
-  region                  = local.region
+  env           = local.environment
+  project_name  = local.project_name
+  api_image_uri = module.repository.api_image_uri
+  app_image_uri = module.repository.app_image_uri
+  region        = local.region
+  database_url  = module.db.database_url
 }
 
 module "repository" {

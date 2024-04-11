@@ -12,6 +12,16 @@ resource "aws_secretsmanager_secret_version" "jwt_key_version" {
   secret_string = random_password.jwt_key.result
 }
 
+resource "aws_secretsmanager_secret" "database_url_key" {
+  name        = "${var.project_name}-database-url-${var.env}"
+  description = "database url"
+}
+
+resource "aws_secretsmanager_secret_version" "database_url_key_version" {
+  secret_id     = aws_secretsmanager_secret.database_url_key.id
+  secret_string = var.database_url
+}
+
 resource "aws_ecs_task_definition" "api_task" {
   family                   = "${var.project_name}-api-task-${var.env}"
   container_definitions    = <<DEFINITION
@@ -32,6 +42,10 @@ resource "aws_ecs_task_definition" "api_task" {
           {
               "name":"JWT_SECRET_KEY",
               "valueFrom":  "${aws_secretsmanager_secret.jwt_key.arn}"
+          },
+          {
+              "name":"DATABASE_URL",
+              "valueFrom":  "${aws_secretsmanager_secret.database_url_key.arn}"
           }
       ],
       "logConfiguration": {
@@ -75,7 +89,7 @@ resource "aws_ecs_task_definition" "app_task" {
   network_mode             = "awsvpc"
   memory                   = 512
   cpu                      = 256
-  execution_role_arn       = var.task_execution_role_arn
+  execution_role_arn       = aws_iam_role.ecs_task_role.arn
 }
 
 #trivy:ignore:AVD-AWS-0053
