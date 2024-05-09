@@ -185,6 +185,17 @@ resource "aws_lb_listener" "app_listener" {
   }
 }
 
+resource "aws_lb_listener" "app_listener_tls" {
+  load_balancer_arn = aws_lb.application_load_balancer.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  certificate_arn   = aws_acm_certificate.certificate.arn
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app_target_group.arn
+  }
+}
+
 resource "aws_lb_listener_rule" "app_forward_listener" {
   listener_arn = aws_lb_listener.app_listener.arn
   priority     = 100
