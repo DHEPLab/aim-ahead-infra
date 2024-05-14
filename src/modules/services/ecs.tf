@@ -180,8 +180,13 @@ resource "aws_lb_listener" "app_listener" {
   # trivy:ignore:avd-aws-0054
   protocol = "HTTP"
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.app_target_group.arn
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
   }
 }
 
@@ -197,7 +202,7 @@ resource "aws_lb_listener" "app_listener_tls" {
 }
 
 resource "aws_lb_listener_rule" "app_forward_listener" {
-  listener_arn = aws_lb_listener.app_listener.arn
+  listener_arn = aws_lb_listener.app_listener_tls.arn
   priority     = 100
 
   action {
@@ -217,7 +222,7 @@ resource "aws_lb_listener_rule" "app_forward_listener" {
 }
 
 resource "aws_lb_listener_rule" "admin_api_lb_listener_rule" {
-  listener_arn = aws_lb_listener.app_listener.arn
+  listener_arn = aws_lb_listener.app_listener_tls.arn
   priority     = 10
 
   action {
