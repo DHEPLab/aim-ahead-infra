@@ -1,4 +1,18 @@
+default_install_hook_types:
+  - pre-commit
+  - commit-msg
+default_stages:
+  - pre-commit
 repos:
+  - repo: local
+    hooks:
+      - id: jira-ticket
+        name: check for jira ticket
+        language: pygrep
+        entry: '\A(?!\[UNCAIM-[0-9]+\]|\[TECH\]\[([A-Z][a-z]+.)(\s(&|&&)\s[A-Z][a-z]+.)?\]\s{0,1}build|chore|ci|docs|feat|fix|perf|refactor|revert|style|test(\(([a-z \-]+)\))?\!?:\ .+$)'
+        args: [ --multiline ]
+        stages: [ commit-msg ]
+
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.88.0 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
     hooks:
@@ -9,10 +23,15 @@ repos:
           - --tf-init-args=-backend=false
       - id: terraform_tflint
         args:
-          - --args=--module
           - --args=--config=__GIT_WORKING_DIR__/.tflint.hcl
       - id: terraform_trivy
         args:
           - --args=--severity=CRITICAL,HIGH
           - --args=--skip-dirs="**/.terraform"
       # - id: terraform_checkov
+
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: [ '--baseline', '.secrets.baseline' ]

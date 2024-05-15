@@ -3,86 +3,82 @@ name: 'Terraform check'
 on:
   push:
     branches: [ "main" ]
-  pull_request:  
+  pull_request:
+
+permissions:
+  contents: read
+  actions: read
 
 jobs:
-  terraform:
-    name: 'Terraform Check'
+  check-secrets:
     runs-on: ubuntu-latest
-    environment: development
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: check-secrets
+        uses: secret-scanner/action@0.0.2
+
+  terraform:
+    needs: check-secrets
+    runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: src/enviroments/dev
-
-    permissions:
-      contents: read # for actions/checkout to fetch code
-      security-events: write # for github/codeql-action/upload-sarif to upload SARIF results
-      actions: read
-      id-token: write
-
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v3
-      with:
-        terraform_version: 1.1.7
-        terraform_wrapper: false
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.1.7
+          terraform_wrapper: false
 
-    - name: Terraform Format
-      run: terraform fmt -check    
+      - name: Terraform format
+        run: terraform fmt -check
 
-    - name: Terraform Init
-      run: terraform init
+      - name: Terraform init
+        run: terraform init
 
-    - uses: actions/cache@v4
-      name: Cache plugin dir
-      with:
-        path: ~/.tflint.d/plugins
-        key: tflint-${{ hashFiles('.tflint.hcl') }}
+      - name: Terraform Validate
+        run: terraform validate
 
-    - uses: terraform-linters/setup-tflint@v4
-      name: Setup TFLint
-      with:
-        tflint_version: v0.50.3
+  code-scan:
+    needs: terraform
+    runs-on: ubuntu-latest
 
-    - name: Init TFLint
-      run: tflint --init --config=${{ github.workspace }}/.tflint.hcl
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Run TFLint
-      run: tflint -f compact --config=${{ github.workspace }}/.tflint.hcl
+      - name: Setup TFLint
+        uses: terraform-linters/setup-tflint@v4
+        with:
+          tflint_version: v0.50.3
 
-#    - name: Checkov GitHub Action
-#      uses: bridgecrewio/checkov-action@master
-#      with:
-#        # This will add both a CLI output to the console and create a results.sarif file
-#        framework: terraform
-##        output_format: cli,sarif
-##        output_file_path: console,results.sarif
-#      continue-on-error: true
+      - name: Cache plugin dir
+        uses: actions/cache@v4
+        with:
+          path: ~/.tflint.d/plugins
+          key: tflint-${{ hashFiles('.tflint.hcl') }}
 
-    - name: Run Trivy vulnerability scanner in IaC mode
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'config'
-#        hide-progress: false
-#        format: 'sarif'
-#        output: 'trivy-results.sarif'
-        exit-code: '1'
-        ignore-unfixed: true
-        severity: 'CRITICAL,HIGH'
+      - name: TFlint init
+        run: tflint --init --config=${{ github.workspace }}/.tflint.hcl
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-#    - name: Upload Trivy scan results to GitHub Security tab
-#      uses: github/codeql-action/upload-sarif@v2
-#      with:
-#        sarif_file: 'trivy-results.sarif'
+      - name: TFlint run
+        run: tflint -f compact --config=${{ github.workspace }}/.tflint.hcl --recursive
 
-    - name: Terraform Validate
-      run: terraform validate
+      - name: Run trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'config'
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
