@@ -19,37 +19,8 @@ jobs:
       - name: check-secrets
         uses: secret-scanner/action@0.0.2
 
-  terraform:
-    needs: check-secrets
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/enviroments/dev
-    env:
-      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version: 1.1.7
-          terraform_wrapper: false
-
-      - name: Terraform format
-        run: terraform fmt -check
-
-      - name: Terraform init
-        run: terraform init
-
-      - name: Terraform Validate
-        run: terraform validate
-
   code-scan:
-    needs: terraform
+    needs: check-secrets
     runs-on: ubuntu-latest
 
     steps:
@@ -82,3 +53,40 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
+
+  terraform:
+    needs: code-scan
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/enviroments/dev
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.1.7
+          terraform_wrapper: false
+
+      - name: Terraform format
+        run: terraform fmt -check
+
+      - name: Terraform init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        if: "contains(github.event.head_commit.message, '[!go deploy!]')"
+        run: terraform plan -no-color
+
+      - name: Terraform Apply
+        if: "contains(github.event.head_commit.message, '[!go deploy!]')"
+        run: terraform apply -auto-approve
