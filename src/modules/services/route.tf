@@ -16,8 +16,9 @@ resource "aws_route53_zone" "hosted_zone" {
 
 resource "aws_route53_record" "sub_app_record" {
   zone_id = aws_route53_zone.hosted_zone.zone_id
-  name    = var.env == "prod" ? "${local.subdomain}.${local.domain_name}" : "${local.subdomain}-${var.env}.${local.domain_name}"
   type    = "A"
+  name    = "${local.subdomain}.${local.domain_name}"
+  # name  = var.env == "prod" ? "${local.subdomain}.${local.domain_name}" : "${local.subdomain}-${var.env}.${local.domain_name}"
 
   alias {
     name                   = aws_lb.application_load_balancer.dns_name
