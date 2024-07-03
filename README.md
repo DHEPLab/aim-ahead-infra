@@ -5,7 +5,7 @@
 ### 1. Install with brew
 
 ```bash
-brew install pre-commit tflint tfsec trivy checkov
+brew install pre-commit tflint tfsec trivy checkov detect-secrets
 ```
 
 ### 2. Install the git hook scripts
