@@ -22,6 +22,23 @@ resource "aws_secretsmanager_secret_version" "database_url_key_version" {
   secret_string = var.database_url
 }
 
+data "aws_secretsmanager_secret" "aws_access_key_id" {
+  name = "aws-access-key-id"
+}
+
+data "aws_secretsmanager_secret_version" "aws_access_key_id_version" {
+  secret_id = data.aws_secretsmanager_secret.aws_access_key_id.id
+}
+
+data "aws_secretsmanager_secret" "aws_secret_access_key" {
+  name = "aws-secret-access-key"
+}
+
+data "aws_secretsmanager_secret_version" "aws_secret_access_key_version" {
+  secret_id = data.aws_secretsmanager_secret.aws_secret_access_key.id
+}
+
+
 resource "aws_ecs_task_definition" "api_task" {
   family                   = "${var.project_name}-api-task-${var.env}"
   container_definitions    = <<DEFINITION
@@ -46,6 +63,14 @@ resource "aws_ecs_task_definition" "api_task" {
           {
               "name":"DATABASE_URL",
               "valueFrom":  "${aws_secretsmanager_secret.database_url_key.arn}"
+          },
+          {
+              "name":"AWS_ACCESS_KEY_ID",
+              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_access_key_id_version.arn}"
+          },
+          {
+              "name":"AWS_SECRET_ACCESS_KEY",
+              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_secret_access_key_version.arn}"
           }
       ],
       "logConfiguration": {

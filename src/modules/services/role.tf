@@ -27,7 +27,12 @@ data "aws_iam_policy_document" "ecs_task_role_policy_document" {
       "kms:Decrypt",
       "secretsmanager:GetSecretValue"
     ]
-    resources = [aws_secretsmanager_secret.jwt_key.arn, aws_secretsmanager_secret.database_url_key.arn]
+    resources = [
+      aws_secretsmanager_secret.jwt_key.arn,
+      aws_secretsmanager_secret.database_url_key.arn,
+      data.aws_secretsmanager_secret.aws_access_key_id.arn,
+      data.aws_secretsmanager_secret.aws_secret_access_key.arn
+    ]
   }
 }
 
