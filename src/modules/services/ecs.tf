@@ -66,11 +66,11 @@ resource "aws_ecs_task_definition" "api_task" {
           },
           {
               "name":"AWS_ACCESS_KEY_ID",
-              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_access_key_id_version.arn}"
+              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_access_key_id_version.arn}:aws-access-key-id::"
           },
           {
               "name":"AWS_SECRET_ACCESS_KEY",
-              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_secret_access_key_version.arn}"
+              "valueFrom":  "${data.aws_secretsmanager_secret_version.aws_secret_access_key_version.arn}:aws-secret-access-key::"
           }
       ],
       "logConfiguration": {
