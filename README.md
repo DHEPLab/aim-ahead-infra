@@ -1,4 +1,4 @@
-# aim-ahead-infra
+# AugMed-infra
 
 ## Install hook locally
 
